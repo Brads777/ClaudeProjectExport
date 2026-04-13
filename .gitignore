@@ -6,3 +6,4 @@ dist/
 build/
 *.zip
 claude-export/
+docs/
