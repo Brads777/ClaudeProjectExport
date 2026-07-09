@@ -87,14 +87,22 @@ def load_export(zip_path: Path):
     with zipfile.ZipFile(zip_path, "r") as zf:
         names = zf.namelist()
 
-        proj_file = next((n for n in names if "project" in n.lower() and n.endswith(".json")), None)
+        proj_files = sorted(n for n in names if "project" in n.lower() and n.endswith(".json"))
         conv_file = next((n for n in names if "conversation" in n.lower() and n.endswith(".json")), None)
 
-        projects = json.loads(zf.read(proj_file)) if proj_file else []
+        projects = []
+        for pf in proj_files:
+            data = json.loads(zf.read(pf))
+            if isinstance(data, dict):
+                if "projects" in data:
+                    projects.extend(data["projects"])
+                else:
+                    projects.append(data)
+            elif isinstance(data, list):
+                projects.extend(data)
+
         conversations = json.loads(zf.read(conv_file)) if conv_file else []
 
-    if isinstance(projects, dict):
-        projects = projects.get("projects", [projects])
     if isinstance(conversations, dict):
         conversations = conversations.get("conversations", conversations.get("data", []))
 
